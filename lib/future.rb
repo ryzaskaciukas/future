@@ -48,5 +48,7 @@ module Future
 
     puts 'Results:'
     p people_mapped_with_laravel
+    # => Results:
+    # => [[{:title=>"php dude", :description=>"I must do laravel"}, true], [{:title=>"non cool dude", :description=>"I must do something about it"}, false]]
   end
 end
