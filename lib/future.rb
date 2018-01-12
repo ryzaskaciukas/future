@@ -1,44 +1,48 @@
 require 'future/version'
 require 'nbayes'
 
+class FutureArray < Array
+  attr_accessor :initial_items
+  attr_accessor :network
+
+  def initialize(items, network)
+    @initial_items = items
+    @network = network
+
+    super(items)
+  end
+end
+
 class Array
-  def future_map(existing_networks = [])
+  def future_map(injected_networks = [])
     result = []
 
-    existing_decision_trees = existing_networks.map do |network|
-      training = network[:network]
+    final_nbayes = NBayes::Base.new
 
-      nbayes = NBayes::Base.new
-
-      training.each do |line|
-        nbayes.train(Future.transform(line.first), line.last)
-      end
-
-      {
-        nbayes: nbayes,
-        network: network,
-      }
-    end
-
-    map do |item|
-      existing_predictions = existing_decision_trees.map do |existing_decision_tree|
-        puts [item[existing_decision_tree[:network][:real_getter].to_sym]]
-
-        key = existing_decision_tree[:network][:real_getter].to_sym
+    result = map do |item|
+      injected_predictions = injected_networks.map do |injected_network|
+        key = injected_network[:real_getter].to_sym
         value = Future.transform(item[key])
-        output = existing_decision_tree[:nbayes].classify(value)
+        output = injected_network[:network].network.classify(value)
 
-        output[1]
+        output[true]
       end
 
-      final_nbayes = NBayes::Base.new
-      existing_predictions.each do |existing_prediction|
-        final_nbayes.train(Future.transform(item), existing_prediction)
+      if block_given?
+        given_result = nil
+
+        unless injected_predictions.empty?
+          given_result = injected_predictions.sum / injected_predictions.size >= 0.5
+        end
+
+        block_result = yield(item, given_result)
+        final_nbayes.train(Future.transform(item), block_result)
       end
 
-      output = final_nbayes.classify(Future.transform(item))
-      yield(item, output.max_class)
+      final_nbayes.classify(Future.transform(item)).max_class
     end
+
+    FutureArray.new(result, final_nbayes)
   end
 end
 
@@ -48,41 +52,43 @@ module Future
     when String
       object.split(/\s+/)
     when Hash
-      object.values
+      object.to_a
+    when TrueClass, FalseClass
+      [object]
     else
       raise 'Not transform for object'
     end
   end
 
   def self.run
-    real_descriptions = [
+    descriptions = [
       'I code with laravel',
       'I like you',
     ]
 
-    laravel_description_network = real_descriptions.future_map do |real_description|
-      [real_description, !!real_description.match('laravel')]
+    laravel_description_network = descriptions.future_map do |description|
+      !!description.match('laravel')
     end
 
-    labeled_laravel_people = [
-      [{
-        name: 'David',
-      }, 1],
-      [{
-        name: 'Peter',
-      }, 1],
+    titles = [
+      'UI designer',
+      'php programmer',
     ]
+
+    php_title_network = titles.future_map do |title|
+      !!title.match('php')
+    end
 
     real_people = [
       {
-        name: 'David',
+        title: 'php dude',
         description: 'I must do laravel'
       },
     ]
 
     final = real_people.future_map([
-      { network: labeled_laravel_people, real_getter: 'description' },
       { network: laravel_description_network, real_getter: 'description' },
+      { network: php_title_network, real_getter: 'title' },
     ]) do |person, works_with_laravel|
       [person, works_with_laravel]
     end
