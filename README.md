@@ -17,7 +17,7 @@ laravel_description_network = descriptions.map do |description|
   !!description.match('laravel')
 end
 # => [true, false]
-# All normal.
+# Looks normal. But it actually got the result through the classifier and not procedurially.
 
 # You can do the same for a title match:
 titles = ['UI designer', 'php programmer']
