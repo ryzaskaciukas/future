@@ -24,10 +24,12 @@ module Future
 
     real_people = [
       {
+        name: 'John',
         title: 'php dude',
         description: 'I must do laravel'
       },
       {
+        name: 'Peter',
         title: 'non cool dude',
         description: 'I must do something about it'
       },
@@ -43,7 +45,7 @@ module Future
         transform: ->(person) { person[:title] }
       },
     ]) do |person, works_with_laravel|
-      [person, works_with_laravel]
+      { person[:name] => works_with_laravel }
     end
 
     puts 'Results:'
