@@ -1,7 +1,6 @@
 require 'future/version'
 require 'future/language_extensions'
 require 'future/array'
-require 'nbayes'
 
 module Future
   def self.test_description_title
@@ -10,7 +9,7 @@ module Future
       'I like you',
     ]
 
-    laravel_description_network = descriptions.future_map do |description|
+    laravel_description_network = descriptions.map do |description|
       !!description.match('laravel')
     end
 
@@ -19,7 +18,7 @@ module Future
       'php programmer',
     ]
 
-    php_title_network = titles.future_map do |title|
+    php_title_network = titles.map do |title|
       !!title.match('php')
     end
 
@@ -34,7 +33,7 @@ module Future
       },
     ]
 
-    people_mapped_with_laravel = real_people.future_map([
+    people_mapped_with_laravel = real_people.map([
       {
         network: laravel_description_network,
         transform: ->(person) { person[:description] },

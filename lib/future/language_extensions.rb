@@ -1,12 +1,13 @@
 require 'future/transform'
+require 'nbayes'
 
 class Array
-  def future_map(injected_networks = [])
+  def map(injected_networks = [])
     result = []
 
     final_nbayes = NBayes::Base.new
 
-    result = map do |item|
+    result = super() do |item|
       injected_predictions = injected_networks.map do |injected_network|
         selected_value = injected_network[:transform].call(item)
         value = Future::Transform.call(selected_value)
