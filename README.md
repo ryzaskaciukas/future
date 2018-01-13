@@ -38,7 +38,7 @@ people_mapped_with_laravel = people.map([
   { network: laravel_description_network, transform: ->(person) { person[:description] } },
   { network: php_title_network, transform: ->(person) { person[:title] } }
 ]) do |person, combined_networks_result_works_with_laravel|
-  { person[:name] => works_with_laravel }
+  { person[:name] => combined_networks_result_works_with_laravel }
 end
 # => [
   { 'John' => true },
